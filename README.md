@@ -12,9 +12,10 @@
 - 🔭 **Sistemas Especiales**:
     - **Urano**: Órbitas perpendiculares respetando su inclinación axial extrema (97.7°).
     - **Plutón-Caronte**: Simulación de sistema binario con proporciones de tamaño y órbitas sincronizadas.
-    - **Tritón**: Órbita retrógrada real alrededor de Neptuno.
+    - **Tritón**: Órbitas retrógrada real alrededor de Neptuno.
     - **Haumea**: Representación no esférica (forma de elipsoide) y rotación ultra-rápida.
     - **Cometa Halley**: Trayectoria altamente elíptica con cola dinámica que reacciona a la proximidad del Sol.
+- 🌌 **Fondo Dinámico**: Universo esférico envolvente de 360° con shader de gradiente y 5,000 estrellas dinámicas que reaccionan al movimiento de la cámara.
 - ☄️ **Contexto Espacial**: Cinturón de Asteroides y Cinturón de Kuiper generados mediante sistemas de partículas optimizados.
 - ⚡ **Performance**: Optimizado con Next.js (App Router) y lazy loading de modelos 3D.
 - 🎨 **Diseño Moderno**: Estilizado con Tailwind CSS v4 para una apariencia premium y futurista.
