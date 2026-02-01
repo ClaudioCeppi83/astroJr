@@ -1,3 +1,5 @@
+"use client";
+
 import { useRef, Suspense, useMemo } from "react";
 import { Canvas, useFrame, RootState } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
@@ -63,10 +65,20 @@ export default function MainScene() {
 						selectedBody={selectedBody} 
 					/>
 
-					{/* Global Lighting */}
-					<ambientLight intensity={1} />
-					<pointLight position={[0, 0, 0]} intensity={4} color="#fff1dc" castShadow />
-					<pointLight position={[100, 100, 100]} intensity={0.2} />
+					{/* Star and Celestial Lights */}
+					<ambientLight intensity={1.2} />
+					<pointLight 
+						position={[0, 0, 0]} 
+						intensity={2.5} 
+						color="#ffffff" 
+						decay={0} 
+						castShadow={false} 
+					/>
+					<directionalLight 
+						position={[100, 100, 100]} 
+						intensity={0.5} 
+						color="#b9d1ff" 
+					/>
 				</Suspense>
 			</Canvas>
 		</div>
