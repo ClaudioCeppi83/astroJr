@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AstroJr 🪐
 
-## Getting Started
+![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-First, run the development server:
+**AstroJr** es una aplicación web inmersiva construida con Next.js y Three.js, diseñada para explorar cuerpos celestes de manera interactiva.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Características
+
+- 🌌 **Visualización 3D**: Renderizado de planetas y modelos 3D usando `@react-three/fiber` con un motor de física personalizado.
+- 🪐 **Mecánica Orbital Real**: Implementación de elementos keplerianos precisos (excentricidad, inclinación, nodos ascendentes).
+- 🔭 **Sistemas Especiales**:
+    - **Urano**: Órbitas perpendiculares respetando su inclinación axial extrema (97.7°).
+    - **Plutón-Caronte**: Simulación de sistema binario con proporciones de tamaño y órbitas sincronizadas.
+    - **Tritón**: Órbita retrógrada real alrededor de Neptuno.
+    - **Haumea**: Representación no esférica (forma de elipsoide) y rotación ultra-rápida.
+    - **Cometa Halley**: Trayectoria altamente elíptica con cola dinámica que reacciona a la proximidad del Sol.
+- ☄️ **Contexto Espacial**: Cinturón de Asteroides y Cinturón de Kuiper generados mediante sistemas de partículas optimizados.
+- ⚡ **Performance**: Optimizado con Next.js (App Router) y lazy loading de modelos 3D.
+- 🎨 **Diseño Moderno**: Estilizado con Tailwind CSS v4 para una apariencia premium y futurista.
+- 🔥 **Backend Serverless**: Integración con Firebase para gestión de datos educativos y científicos.
+- 🐻 **Gestión de Estado**: Uso de Zustand para un manejo de estado global ligero y rápido.
+
+## 🛠️ Stack Tecnológico
+
+- **Frontend Core**: [React 19](https://react.dev/), [Next.js 16](https://nextjs.org/)
+- **3D & Animación**: [Three.js](https://threejs.org/), [React Three Fiber](https://docs.pmnd.rs/react-three-fiber), [Drei](https://github.com/pmndrs/drei), [Framer Motion](https://www.framer.com/motion/)
+- **Estilos**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Backend & DB**: [Firebase](https://firebase.google.com/)
+- **Estado**: [Zustand](https://github.com/pmndrs/zustand)
+- **Lenguaje**: [TypeScript](https://www.typescriptlang.org/)
+
+## 📋 Prerrequisitos
+
+Antes de empezar, asegúrate de tener instalado:
+
+- Node.js (v20 o superior recomendado)
+- npm o yarn
+
+## 🔧 Instalación y Configuración
+
+1. **Clonar el repositorio**
+
+   ```bash
+   git clone https://github.com/usuario/astro-jr.git
+   cd astro-jr
+   ```
+
+2. **Instalar dependencias**
+
+   ```bash
+   npm install
+   # o
+   yarn install
+   ```
+
+3. **Configurar variables de entorno**
+
+   Copia el archivo de ejemplo y configura tus credenciales de Firebase:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Edita `.env.local` con tus keys de Firebase.
+
+4. **Iniciar servidor de desarrollo**
+
+   ```bash
+   npm run dev
+   ```
+
+   Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+## 📂 Estructura del Proyecto
+
+```text
+astro-jr/
+├── public/          # Assets estáticos
+├── src/
+│   ├── app/         # Rutas y layouts (Next.js App Router)
+│   ├── components/  # Componentes React
+│   │   ├── 3d/      # Componentes Three.js
+│   │   └── ui/      # Componentes de interfaz de usuario
+│   ├── hooks/       # Custom hooks
+│   └── lib/         # Utilidades y configuración (Firebase, Store)
+├── .env.local       # Variables de entorno (no commitear)
+└── ...config files  # Configuraciones de herramientas
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🤝 Contribución
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Las contribuciones son bienvenidas. Por favor, sigue los siguientes pasos:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Haz un Fork del proyecto.
+2. Crea una nueva rama (`git checkout -b feature/nueva-feature`).
+3. Haz commit de tus cambios (`git commit -m 'feat: Agrega nueva feature'`). *Usa commits semánticos*.
+4. Haz Push a la rama (`git push origin feature/nueva-feature`).
+5. Abre un Pull Request.
 
-## Learn More
+## 📄 Licencia
 
-To learn more about Next.js, take a look at the following resources:
+Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Hecho con explicita pasión por el código limpio. ✨

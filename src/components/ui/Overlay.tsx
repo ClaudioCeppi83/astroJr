@@ -1,15 +1,25 @@
 "use client";
 
-import { Menu, RotateCcw, X, Info } from "lucide-react";
+import { Menu, RotateCcw, X } from "lucide-react";
 import { useUniverseStore } from "@/lib/store";
 import { motion, AnimatePresence } from "framer-motion";
+import PanelEducativo from "./PanelEducativo";
 
 /**
  * Overlay component handles the primary UI elements on top of the 3D scene.
  * @returns {JSX.Element}
  */
 export default function Overlay() {
-  const { selectedBody, isMenuOpen, setSelectedBody, toggleMenu, resetSelection, universeData } = useUniverseStore();
+  const { 
+    selectedBody, 
+    isMenuOpen, 
+    isFollowing,
+    setSelectedBody, 
+    setFollowing,
+    toggleMenu, 
+    resetSelection, 
+    universeData 
+  } = useUniverseStore();
   
   const currentData = selectedBody ? universeData[selectedBody] : null;
 
@@ -57,71 +67,81 @@ export default function Overlay() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto no-scrollbar space-y-4">
-              {Object.entries(universeData).filter(([_, d]) => !d.parent).map(([name, data]) => (
-                <button 
-                  key={name}
-                  onClick={() => setSelectedBody(name)}
-                  className={`w-full text-left p-4 rounded-2xl transition-all border ${selectedBody === name ? 'bg-cyan-500/10 border-cyan-500' : 'bg-white/5 border-transparent hover:bg-white/10'}`}
-                >
-                  <div className="font-bold text-sm tracking-wide">{name}</div>
-                  <div className="text-[10px] text-slate-400 uppercase font-black">{data.type}</div>
-                </button>
-              ))}
+            <div className="flex-1 overflow-y-auto no-scrollbar space-y-2 pr-2">
+              {Object.entries(universeData)
+                .filter(([_, d]) => !d.parent) // Get all main bodies (Planets/Sun)
+                .sort((a, b) => (a[1].dist || 0) - (b[1].dist || 0)) // Sort by distance
+                .map(([id, data]) => (
+                  <div key={id} className="space-y-1">
+                    <button 
+                      onClick={() => {
+                        setSelectedBody(id);
+                        toggleMenu(false);
+                      }}
+                      className={`w-full text-left p-3 rounded-xl transition-all border flex items-center justify-between group ${selectedBody === id ? 'bg-cyan-500/20 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.2)]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl group-hover:scale-110 transition-transform">{(data as any).simbolo || "🪐"}</span>
+                        <div>
+                          <div className={`font-bold text-sm tracking-wide ${selectedBody === id ? 'text-cyan-300' : 'text-white'}`}>{data.name}</div>
+                          <div className="text-[9px] text-slate-400 uppercase font-black tracking-tighter opacity-70">{data.type}</div>
+                        </div>
+                      </div>
+                      <div className={`w-1.5 h-1.5 rounded-full ${selectedBody === id ? 'bg-cyan-500 animate-pulse' : 'bg-white/10'}`} />
+                    </button>
+
+                    {/* Show satellites (Moons) indented */}
+                    {Object.entries(universeData)
+                      .filter(([_, d]) => d.parent === id)
+                      .sort((a, b) => (a[1].dist || 0) - (b[1].dist || 0))
+                      .map(([moonId, moonData]) => (
+                        <button 
+                          key={moonId}
+                          onClick={() => {
+                            setSelectedBody(moonId);
+                            toggleMenu(false);
+                          }}
+                          className={`w-[90%] ml-auto text-left p-2 rounded-lg transition-all border flex items-center gap-3 group/moon ${selectedBody === moonId ? 'bg-purple-500/20 border-purple-500/50' : 'bg-white/0 border-transparent hover:bg-white/5'}`}
+                        >
+                          <span className="text-sm opacity-60 group-hover/moon:opacity-100 transition-opacity">{(moonData as any).simbolo || "🌑"}</span>
+                          <div className={`font-bold text-xs ${selectedBody === moonId ? 'text-purple-300' : 'text-slate-400'}`}>{moonData.name}</div>
+                        </button>
+                      ))}
+                  </div>
+                ))}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Info Panel */}
-      <AnimatePresence>
-        {selectedBody && currentData && (
-          <motion.div 
-            initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100%", opacity: 0 }}
-            className="fixed bottom-0 inset-x-0 md:left-auto md:right-0 md:top-24 md:bottom-auto md:w-96 m-4 glass-card pointer-events-auto z-40"
+      {/* Camera Controls (Follow/Detach) */}
+      {selectedBody && (
+        <motion.div 
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-3 pointer-events-auto z-40"
+        >
+          <button 
+            onClick={() => setFollowing(!isFollowing)}
+            className={`glass px-6 py-3 rounded-2xl flex items-center gap-3 font-bold text-xs uppercase tracking-widest transition-all ${isFollowing ? 'border-cyan-500 text-cyan-400' : 'text-slate-400'}`}
           >
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-none">{selectedBody}</h2>
-                <span className="text-[10px] font-bold text-cyan-400 px-2 py-0.5 bg-cyan-400/10 border border-cyan-400/20 rounded uppercase mt-2 inline-block">
-                  {currentData.type}
-                </span>
-              </div>
-              <button 
-                onClick={() => setSelectedBody(null)} 
-                className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <div className={`w-2 h-2 rounded-full ${isFollowing ? 'bg-cyan-500 animate-pulse' : 'bg-slate-600'}`} />
+            {isFollowing ? 'Siguiendo' : 'Cámara Libre'}
+          </button>
+          
+          <button 
+            onClick={resetSelection}
+            className="glass px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors"
+          >
+            Despegar
+          </button>
+        </motion.div>
+      )}
 
-            <p className="text-sm text-slate-300 leading-relaxed mb-6">
-              {currentData.desc}
-            </p>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
-                <span className="block text-[8px] text-slate-500 font-black uppercase mb-1">Órbita</span>
-                <span className="text-xs font-bold">{currentData.orbit}</span>
-              </div>
-              <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
-                <span className="block text-[8px] text-slate-500 font-black uppercase mb-1">Gravedad</span>
-                <span className="text-xs font-bold">{currentData.grav}</span>
-              </div>
-            </div>
+      {/* Panel Educativo Mejorado */}
+      <PanelEducativo />
 
-            <div className="mt-6 flex items-center gap-3 p-4 bg-cyan-500/10 rounded-2xl border border-cyan-500/20">
-              <Info className="w-5 h-5 text-cyan-400 shrink-0" />
-              <div>
-                <div className="text-[10px] font-black uppercase text-cyan-400">Curiosidad {currentData.rain !== "Nula" ? "Climática" : ""}</div>
-                <div className="text-xs font-bold">Lluvia de {currentData.rain}</div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Bottom Hint */}
       {!selectedBody && !isMenuOpen && (

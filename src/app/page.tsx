@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import MainScene from "@/components/3d/MainScene";
 import Overlay from "@/components/ui/Overlay";
-import { useCelestialBodies } from "@/hooks/useCelestialBodies";
+import { useSistemaSolarCompleto } from "@/hooks/useSistemaSolarCompleto";
 import { useUniverseStore } from "@/lib/store";
 import { Loader2 } from "lucide-react";
 
@@ -12,16 +11,10 @@ import { Loader2 } from "lucide-react";
  * Renders the 3D Cosmic Scene and the UI Interaction Layer.
  */
 export default function Home() {
-  const { bodies, loading } = useCelestialBodies();
-  const setUniverseData = useUniverseStore((state) => state.setUniverseData);
+  const { error } = useSistemaSolarCompleto();
+  const isLoading = useUniverseStore((state) => state.isLoading);
 
-  useEffect(() => {
-    if (!loading && Object.keys(bodies).length > 0) {
-      setUniverseData(bodies);
-    }
-  }, [bodies, loading, setUniverseData]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-950 text-white p-8">
         <Loader2 className="w-12 h-12 text-cyan-500 animate-spin mb-4" />
@@ -30,6 +23,15 @@ export default function Home() {
         </h2>
       </div>
     );
+  }
+
+  if (error) {
+     return (
+        <div className="h-screen w-screen flex flex-col items-center justify-center bg-red-950 text-white p-8">
+            <h2 className="text-2xl font-bold mb-4">¡Houston, tenemos un problema!</h2>
+            <p className="text-red-200">{error}</p>
+        </div>
+     )
   }
 
   return (

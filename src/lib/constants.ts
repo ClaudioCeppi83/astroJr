@@ -1,18 +1,29 @@
+import { OrbitalElements } from "@/utils/physics";
+
 export interface CelestialBody {
   name?: string;
   color: number;
   size: number;
   dist: number;
   category: string;
-  rain: string;
+  rain?: string; // Optativo ya que viene de constants antiguas
   desc: string;
   type: string;
-  tempDay: string;
-  tempNight: string;
+  tempDay?: string;
+  tempNight?: string;
   grav: string;
   orbit: string;
   parent?: string;
   model_url?: string;
+  funFact?: string;
+  simbolo?: string;
+  temperaturaMedia?: number;
+  masa?: string;
+  satelites?: number;
+  descubrimiento?: any;
+  datosCuriosos?: string[];
+  relieveNotable?: string[];
+  orbitalElements?: OrbitalElements;
 }
 
 export const UNIVERSE_DATA: Record<string, CelestialBody> = {
