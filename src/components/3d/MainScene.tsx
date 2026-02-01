@@ -1,14 +1,25 @@
 "use client";
 
-import { useRef, Suspense } from "react";
+import { useRef, Suspense, useMemo } from "react";
 import { Canvas, useFrame, RootState } from "@react-three/fiber";
 import { OrbitControls, Stars, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import { useUniverseStore } from "@/lib/store";
+import { usePhysicsEngine } from "@/hooks/usePhysicsEngine";
+import { getOrbitPath } from "@/utils/physics";
 import Planet from "./Planet";
+import AsteroidBelt from "./AsteroidBelt";
 
 /**
- * MainScene component that sets up the Three.js canvas and global environment.
+ * Constants for simulation behavior
+ */
+const CAMERA_INITIAL_POS: [number, number, number] = [0, 150, 250];
+const CAMERA_FOV = 40;
+const MAX_VIEW_DISTANCE = 8000;
+const FOLLOW_LERP_FACTOR = 0.1;
+
+/**
+ * MainScene component that initializes the Three.js canvas, lighting, and camera.
  */
 export default function MainScene() {
   const controlsRef = useRef<any>(null);
@@ -21,20 +32,21 @@ export default function MainScene() {
     <div className="fixed inset-0 z-0 bg-space-950">
       <Canvas shadows gl={{ antialias: true, logarithmicDepthBuffer: true }}>
         <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[0, 150, 250]} fov={40} />
+          <PerspectiveCamera makeDefault position={CAMERA_INITIAL_POS} fov={CAMERA_FOV} far={MAX_VIEW_DISTANCE} />
           
           <OrbitControls 
             ref={controlsRef}
             enableDamping 
             dampingFactor={0.05} 
             minDistance={minZoom} 
-            maxDistance={2000}
+            maxDistance={MAX_VIEW_DISTANCE}
+            screenSpacePanning={true}
             makeDefault 
           />
 
           <SceneContent controlsRef={controlsRef} selectedBody={selectedBody} />
 
-          <Stars radius={400} depth={100} count={30000} factor={6} saturation={0} fade speed={0.5} />
+          <Stars radius={2000} depth={100} count={30000} factor={6} saturation={0} fade speed={0.5} />
           
           <ambientLight intensity={1} />
           <pointLight position={[0, 0, 0]} intensity={4} color="#fff1dc" castShadow />
@@ -52,70 +64,86 @@ interface SceneContentProps {
 
 function SceneContent({ controlsRef, selectedBody }: SceneContentProps) {
   const universeData = useUniverseStore((state) => state.universeData);
+  const { distanceScale } = usePhysicsEngine();
 
-  useFrame((state: RootState) => {
-    if (selectedBody && controlsRef.current) {
-      const bodyRef = state.scene.getObjectByName(`body-ref-${selectedBody}`);
-      if (bodyRef) {
-        const worldPos = new THREE.Vector3();
-        bodyRef.getWorldPosition(worldPos);
-        
-        // 1. Precise Target Following
-        controlsRef.current.target.lerp(worldPos, 0.1);
-
-        // 2. Smooth Auto-Zoom
-        const cameraPos = state.camera.position;
-        const bodyData = universeData[selectedBody];
-        const idealDist = (bodyData?.size || 1) * 6;
-        const currentDist = cameraPos.distanceTo(worldPos);
-        
-        if (currentDist > idealDist * 4) {
-          const dir = new THREE.Vector3().subVectors(cameraPos, worldPos).normalize();
-          const targetCamPos = new THREE.Vector3().addVectors(worldPos, dir.multiplyScalar(idealDist * 2.5));
-          cameraPos.lerp(targetCamPos, 0.05);
-        }
+  // Memoize orbit paths
+  const orbitPaths = useMemo(() => {
+    const paths: Record<string, THREE.Vector3[]> = {};
+    Object.entries(universeData).forEach(([id, body]) => {
+      if (body.orbitalElements && id !== 'sol') {
+        paths[id] = getOrbitPath(body.orbitalElements, distanceScale);
       }
-    } else if (controlsRef.current) {
-      controlsRef.current.target.lerp(new THREE.Vector3(0, 0, 0), 0.05);
-    }
-  });
+    });
+    return paths;
+  }, [universeData, distanceScale]);
+
+	/**
+	 * Follow Logic: Smoothly interpolates the OrbitControls target to the selected body's position.
+	 */
+	useFrame((state: RootState) => {
+		const { isFollowing } = useUniverseStore.getState();
+
+		if (selectedBody && controlsRef.current && isFollowing) {
+			const bodyObject = state.scene.getObjectByName(`body-ref-${selectedBody}`);
+			if (bodyObject) {
+				const worldPos = new THREE.Vector3();
+				bodyObject.getWorldPosition(worldPos);
+				
+				// Smoothly center camera on target
+				controlsRef.current.target.lerp(worldPos, FOLLOW_LERP_FACTOR);
+			}
+		} else if (!selectedBody && controlsRef.current && isFollowing) {
+			// Center back to Sun (origin)
+			controlsRef.current.target.lerp(new THREE.Vector3(0, 0, 0), 0.05);
+		}
+	});
+
+	/**
+	 * Recursive render helper to maintain parent-child hierarchy (Planets -> Moons).
+	 * This ensures nested coordinate systems work correctly for orbiting satellites.
+	 */
+	const renderBodies = (parentId: string | null = null) => {
+		return Object.entries(universeData)
+			.filter(([_, data]) => (parentId === null ? !data.parent : data.parent === parentId))
+			.map(([id, data]) => (
+				<Planet 
+					key={id}
+					id={id}
+					name={data.name || id}
+					size={data.size}
+					color={data.color}
+					orbitalElements={data.orbitalElements}
+					orbitPath={orbitPaths[id]}
+					model_url={data.model_url}
+					type={data.type}
+					parent={data.parent}
+				>
+					{renderBodies(id)}
+				</Planet>
+			));
+	};
 
   return (
     <>
-      {Object.entries(universeData)
-        .filter(([_, d]) => !d.parent)
-        .map(([name, data]) => {
-          // Absolute speed constant
-          const speed = name === "Sol" ? 0 : 0.006 / Math.sqrt(data.dist || 1);
-          const children = Object.entries(universeData).filter(([_, d]) => d.parent === name);
+      {renderBodies()}
+      
+      {/* 5. Asteroid Belt (Between Mars and Jupiter) */}
+      <AsteroidBelt 
+        innerRadius={210} 
+        outerRadius={330} 
+        count={8000} 
+        color="#94a3b8" 
+        speedFactor={0.002}
+      />
 
-          return (
-            <Planet 
-              key={name}
-              name={name}
-              size={data.size}
-              color={data.color}
-              distance={data.dist}
-              speed={speed}
-              model_url={data.model_url}
-            >
-              {children.map(([cName, cData]) => {
-                const cSpeed = 0.05 / Math.sqrt(cData.dist || 1);
-                return (
-                  <Planet 
-                    key={cName}
-                    name={cName}
-                    size={cData.size}
-                    color={cData.color}
-                    distance={cData.dist}
-                    speed={cSpeed}
-                    model_url={cData.model_url}
-                  />
-                );
-              })}
-            </Planet>
-          );
-      })}
+      {/* 6. Kuiper Belt (Beyond Neptune) */}
+      <AsteroidBelt 
+        innerRadius={3200} 
+        outerRadius={4500} 
+        count={5000} 
+        color="#64748b" 
+        speedFactor={0.0005}
+      />
     </>
   );
 }

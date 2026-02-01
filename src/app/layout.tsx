@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body
         className={`${nunito.variable} font-sans antialiased bg-slate-950 text-white selection:bg-cyan-500/30 overflow-hidden`}
       >
