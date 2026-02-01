@@ -35,7 +35,7 @@ export default function Home() {
   }
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-slate-950 text-white font-sans">
+    <main className="relative h-screen w-screen overflow-hidden text-white font-sans bg-black">
       {/* 3D Background Layer */}
       <MainScene />
 

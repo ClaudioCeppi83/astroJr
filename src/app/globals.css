@@ -64,6 +64,25 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
   }
+
+  /* Starfield Animations */
+  @keyframes animStar {
+    from {
+      transform: translateY(0px);
+    }
+    to {
+      transform: translateY(-2000px);
+    }
+  }
+
+  @keyframes pulseStar {
+    0%, 100% {
+      opacity: var(--tw-bg-opacity, 1);
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
 }
 
 body {
